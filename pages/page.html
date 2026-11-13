@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Teaching Assistant</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body, html {
+        height: 100%;
+        width: 100%;
+        background-color: #f4f7ff;
+        display: flex;
+        overflow-x: hidden;
+    }
+    .sidebar {
+        width: 260px;
+        background: url('/static/images/sidebar-bg.jpg') no-repeat center center/cover;
+        height: 100vh;
+        position: fixed;
+        right: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px 0;
+        color: white;
+        z-index: 10;
+    }
+
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(13, 19, 53, 0.88);
+        z-index: -1;
+    }
+
+    .sidebar-top {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        padding-top: 20px;
+    }
+
+    .nav-links {
+        list-style: none;
+        width: 100%;
+    }
+
+    .nav-links li {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .nav-links a {
+        display: flex;
+        align-items: center;
+        padding: 14px 25px;
+        color: #b0c4de;
+        text-decoration: none;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-links a i {
+        margin-left: 15px;
+        font-size: 18px;
+    }
+
+    .nav-links li.active a, .nav-links a:hover {
+        background-color: #4a72e8;
+        color: white;
+        border-radius: 0 30px 30px 0;
+        margin-left: 10px;
+        width: calc(100% - 10px);
+    }
+
+    .sidebar-bottom {
+        padding: 0 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        color: #ff6b6b;
+        text-decoration: none;
+        font-size: 15px;
+        padding: 10px 0;
+        transition: color 0.2s;
+    }
+
+    .logout-btn i {
+        margin-left: 15px;
+        font-size: 18px;
+    }
+
+    .logout-btn:hover {
+        color: #ff4757;
+    }
+    .main-content {
+        margin-right: 260px;
+        flex: 1;
+        padding: 30px;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+    .header-banner {
+        background: url('/static/images/banner-bg.jpg') no-repeat center center/cover;
+        border-radius: 20px;
+        padding: 30px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .header-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(13, 19, 53, 0.6);
+        z-index: 1;
+    }
+
+    .header-banner > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .student-avatar-empty {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.8);
+        background-color: #eef4ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #4a72e8;
+        font-size: 38px;
+    }
+
+    .student-details h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+
+    .student-details p {
+        font-size: 14px;
+        color: #d0e1fd;
+        margin-bottom: 10px;
+    }
+
+    .student-id-badge {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+   
+    .content-section {
+        display: none;
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
+    .card-box {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    .card-box h3 {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+  
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 15px;
+        background: #f8fafc;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .info-item span:first-child {
+        color: #777;
+    }
+
+    .info-item span:last-child {
+        color: #333;
+        font-weight: bold;
+    }
+
+  
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .attendance-table th, .attendance-table td {
+        padding: 14px;
+        text-align: right;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .attendance-table th {
+        color: #777;
+        background-color: #f8fafc;
+    }
+
+    .badge-present {
+        background-color: #ff4757;
+        color: #fff;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .badge-present:hover {
+        background-color: #e63946;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 71, 87, 0.4);
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 80px;
+        }
+        .sidebar .nav-links span, .sidebar .logout-btn span {
+            display: none;
+        }
+        .main-content {
+            margin-right: 80px;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <ul class="nav-links">
+                <li class="active" onclick="switchTab('home', event)">
+                    <a href="#"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+                </li>
+                <li onclick="switchTab('profile', event)">
+                    <a href="#"><i class="fa-solid fa-user"></i><span>المعلومات الشخصية</span></a>
+                </li>
+                <li onclick="switchTab('attendance', event)">
+                    <a href="#"><i class="fa-solid fa-calendar-check"></i><span>تسجيل الحضور</span></a>
+                </li>
+                <li onclick="switchTab('settings', event)">
+                    <a href="#"><i class="fa-solid fa-gear"></i><span>الإعدادات</span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="#" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i><span>تسجيل الخروج</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="header-banner">
+            <div class="student-info">
+                <div class="student-avatar-empty">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                
+                <div class="student-details">
+                    <h1 id="userNameHeader">اسم المستخدم </h1>
+                    <div class="student-id-badge">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span id="userIdHeader">الرقم الجامعي: --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="home" class="content-section active">
+        </div>
+
+        <div id="profile" class="content-section">
+            <div class="card-box" style="max-width: 600px; margin: 0 auto;">
+                <h3><i class="fa-solid fa-user-pen"></i> المعلومات الشخصية</h3>
+                <div class="info-list" style="margin-top: 20px;">
+                    <div class="info-item"><span>الاسم الكامل</span><span id="profileFullName">--</span></div>
+                    <div class="info-item"><span>البريد الإلكتروني</span><span id="profileEmail">--</span></div>
+                    <div class="info-item"><span>كلمة المرور</span><span id="profilePassword">********</span></div>
+                    <div class="info-item"><span>الرقم الجامعي</span><span id="profileId">--</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="attendance" class="content-section">
+            <div class="card-box" style="max-width: 600px; margin: 0 auto;">
+                <h3><i class="fa-solid fa-calendar-check"></i> تسجيل الحضور اليومي</h3>
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>اليوم الحالي</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="currentDayName">اليوم</td>
+                            <td><button type="button" class="badge-present">متاح لتسجيل الحضور</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="settings" class="content-section">
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabId, event) {
+            event.preventDefault();
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+        const daysArabic = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        const todayIndex = new Date().getDay();
+        document.getElementById('currentDayName').innerText = daysArabic[todayIndex];
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function deleteCookie(name) {
+    document.cookie = `${name}=; path=/; max-age=0`;
+}
+
+async function fetchUserData() {
+    const sessionId = getCookie('session_id');
+
+    if (!sessionId) {
+        alert("يرجى تسجيل الدخول أولاً!");
+        window.location.replace('/');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+
+    try {
+        const response = await fetch('/verify-session', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (result.status === "valid") {
+            const u = result.user;
+            document.getElementById('userNameHeader').innerText = u.name + " " + u.lastname;
+            document.getElementById('userIdHeader').innerText = "الرقم الجامعي: " + u.id;
+            document.getElementById('profileFullName').innerText = u.name + " " + u.lastname;
+            document.getElementById('profileEmail').innerText = u.email;
+            document.getElementById('profileId').innerText = u.id;
+        } else {
+            deleteCookie('session_id');
+            alert("انتهت صلاحية الجلسة، يرجى تسجيل الدخول من جديد.");
+            window.location.replace('/');
+        }
+    } catch (error) {
+        console.error("خطأ في الاتصال بالسيرفر:", error);
+    }
+}
+
+fetchUserData();
+
+document.querySelector('.logout-btn').addEventListener('click', async function(e) {
+    e.preventDefault(); 
+
+    const sessionId = getCookie('session_id');
+
+    if (sessionId) {
+        const formData = new FormData();
+        formData.append('session_id', sessionId);
+
+        try {
+            await fetch('/logout', {
+                method: 'POST',
+                body: formData
+            });
+        } catch (error) {
+            console.error("خطأ أثناء الاتصال بالسيرفر لتسجيل الخروج:", error);
+        }
+    }
+
+    deleteCookie('session_id');
+    window.location.replace('/');
+});
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Teaching Assistant</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body, html {
+        height: 100%;
+        width: 100%;
+        background-color: #0d1335;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .camera-container {
+        width: 100%;
+        max-width: 420px;
+        background: #f4f7ff;
+        padding: 35px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 2px dashed #a0c4ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        background-color: #eef4ff;
+    }
+
+    .avatar-circle i {
+        font-size: 38px;
+        color: #5382ff;
+    }
+
+    h2 {
+        color: #0d1335;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    p {
+        color: #666;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    .video-wrapper {
+        width: 100%;
+        height: 260px;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #000;
+        position: relative;
+        margin-bottom: 25px;
+        border: 2px solid #dbe5fc;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);    }
+
+    .btn-capture {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 25px;
+        background: linear-gradient(90deg, #4d73ff, #6b46ff);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(77, 115, 255, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-capture:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(77, 115, 255, 0.4);
+    }
+
+    .btn-capture:disabled {
+        background: #a5b4fc;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    canvas {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+    <div class="camera-container">
+        <div class="avatar-circle">
+            <i class="fa-solid fa-camera"></i>
+        </div>
+
+        <h2>الخطوة الثانية: التقاط بصمة الوجه</h2>
+        <p>يرجى التوجه نحو الكاميرا والضغط على الزر أدناه لإكمال تسجيل الحساب.</p>
+
+        <div class="video-wrapper">
+            <video id="video" autoplay playsinline></video>
+        </div>
+
+        <button id="captureBtn" class="btn-capture">التقاط</button>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("تعذر الوصول إلى الكاميرا. يرجى منح الإذن للمتصفح لاستخدام الكاميرا.");
+                console.error(err);
+            }
+        }
+
+        initCamera();
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
+
+        captureBtn.addEventListener('click', async () => {
+
+            const savedData = JSON.parse(sessionStorage.getItem('signup_data'));
+            
+            if (!savedData) {
+                alert("بيانات الخطوة الأولى غير موجودة، يرجى ملء استمارة التسجيل أولاً.");
+                window.location.href = '/';
+                return;
+            }
+
+            captureBtn.disabled = true;
+            captureBtn.innerText = "جاري التقاط الصور...";
+
+            const formData = new FormData();
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            for (let i = 1; i <= 4; i++) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageDataURL = canvas.toDataURL('image/jpeg');
+                const blob = dataURItoBlob(imageDataURL);
+                formData.append('images', blob, `photo_${i}.jpg`);
+                
+                if (i < 4) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+
+            for (const key in savedData) {
+                formData.append(key, savedData[key]);
+            }
+
+            captureBtn.innerText = "جاري تسجيل الدخول ...";
+
+            try {
+                const response = await fetch('/complete-signup', {
+                    method: 'POST',
+                    body: formData
+                });
+const result = await response.json();
+
+                if (result.status === "success") {
+                    document.cookie = `session_id=${result.session_id}; path=/; max-age=86400`;
+                    sessionStorage.removeItem('signup_data');
+                    window.location.href = '/page';
+                } else {
+                    alert("خطأ: " + (result.message || "فشل في حفظ الحساب"));
+                    captureBtn.disabled = false;
+                    captureBtn.innerText = "التقاط";
+                }
+            } catch (error) {
+                alert("تعذر الاتصال بالسيرفر أو السيرفر مغلق.");
+                console.error(error);
+                captureBtn.disabled = false;
+                captureBtn.innerText = "التقاط";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Teaching Assistant</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body, html {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        background-color: #0d1335;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 380px;
+        background: #f4f7ff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .avatar-circle {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 2px dashed #a0c4ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 35px;
+        background-color: #eef4ff;
+    }
+
+    .avatar-circle i {
+        font-size: 45px;
+        color: #5382ff;
+    }
+
+    .input-group {
+        position: relative;
+        width: 100%;
+        margin-bottom: 18px;
+    }
+
+    .input-group i {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4a72e8;
+        font-size: 16px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 14px 48px 14px 20px;
+        border: 1px solid #dbe5fc;
+        border-radius: 25px;
+        background-color: #ffffff;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .input-group input:focus {
+        border-color: #4a72e8;
+        box-shadow: 0 0 8px rgba(74, 114, 232, 0.2);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 25px;
+        background: linear-gradient(90deg, #4d73ff, #6b46ff);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+        box-shadow: 0 4px 12px rgba(77, 115, 255, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(77, 115, 255, 0.4);
+    }
+
+    .register-link-container {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #555;
+        text-align: center;
+    }
+
+    .register-link-container a {
+        color: #4a72e8;
+        text-decoration: none;
+        font-weight: bold;
+        margin-right: 5px;
+        transition: color 0.2s ease;
+    }
+
+    .register-link-container a:hover {
+        color: #3557bd;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 850px) {
+        body, html {
+            overflow: auto !important;
+            padding: 20px;
+        }
+        .login-container {
+            width: 100%;
+            padding: 30px 20px;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="avatar-circle">
+            <i class="fa-solid fa-user"></i>
+        </div>
+
+        <form id="loginForm" style="width: 100%;">
+            <div class="input-group">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" placeholder="البريد الإلكتروني" required name="email">
+            </div>
+
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" placeholder="كلمة المرور" required name="password">
+            </div>
+
+            <button type="submit" class="btn-submit">تسجيل الدخول</button>
+        </form>
+        <div class="register-link-container">
+            ليس لديك حساب؟ <a href="/">إنشاء حساب جديد</a>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formdata = new FormData(e.target);
+            try {
+                const response = await fetch('/login-check', {
+                    method: 'POST',
+                    body: formdata
+                });
+const result = await response.json();
+
+                if (result.status === "success") {
+                    document.cookie = `session_id=${result.session_id}; path=/; max-age=86400`;
+                    alert("تم تسجيل الدخول بنجاح");
+                    window.location.href = '/page';
+                } else {
+                    alert("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+                }
+            } catch (error) {
+                alert("السيرفر مغلق أو تعذر الاتصال به");
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
